@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const useForm = (initialValues: {}): Array<any> => {
+const useForm = (initialValues: Object): Array<any> => {
   const [values, setValues] = useState(initialValues);
 
   const onChange = (event: React.FormEvent<EventTarget>): void => {

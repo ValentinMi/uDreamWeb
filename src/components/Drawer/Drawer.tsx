@@ -105,6 +105,8 @@ export default function AppDrawer() {
   };
 
   const treatPathName = (pathName: string) => {
+    // If it's "/" => homepage
+    if (pathName === "/") return "Welcome";
     let pageName = pathName.split("").splice(1).join("");
     pageName = capitalize(pageName);
     return pageName;

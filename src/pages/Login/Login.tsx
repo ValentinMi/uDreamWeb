@@ -1,27 +1,36 @@
-// TODO add confirm password
-
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector, connect } from "react-redux";
 import useForm from "../../hooks/useForm";
 import { formInitalsValues, validateForm } from "./config";
 import capitalize from "../../utils/capitalize";
-import { RegisterForm } from "../../types/RegisterForm";
-import { registerUser } from "../../actions/user.actions";
+import { LoginForm } from "../../types/LoginForm";
+import { authUser } from "../../actions/auth.actions";
+import { NavLink, useHistory } from "react-router-dom";
 
 import { TextField, Typography, Paper, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { NavLink } from "react-router-dom";
+import { User } from "../../types/User";
 
-interface RegisterProps {}
+import { authUserWithJWT } from "../../actions/auth.actions";
 
-const Register: React.FC<RegisterProps> = () => {
+interface LoginProps {}
+
+interface RootState {
+  authReducer: {
+    user: User;
+  };
+}
+
+const Login: React.FC<LoginProps> = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
+  const { user } = useSelector((state: RootState) => state.authReducer);
 
   const [values, onChange] = useForm(formInitalsValues);
   const [formIsValid, setFormIsValid] = useState(false);
 
-  const onSubmit = (form: RegisterForm) => dispatch(registerUser(form));
+  const onSubmit = (form: LoginForm) => dispatch(authUser(form));
 
   useEffect(() => {
     setTimeout(() => {
@@ -30,6 +39,15 @@ const Register: React.FC<RegisterProps> = () => {
       }
     }, 500);
   }, [values]);
+
+  // For auto auth
+  useEffect(() => {
+    if (user === undefined) {
+      dispatch(authUserWithJWT());
+    } else {
+      history.push("/home");
+    }
+  }, [history, user, dispatch]);
 
   return (
     <div className={classes.root}>
@@ -48,7 +66,7 @@ const Register: React.FC<RegisterProps> = () => {
           align="center"
           className={classes.title}
         >
-          Sign up now !
+          Sign in now !
         </Typography>
         <Paper elevation={3} style={{ marginTop: "50px" }}>
           <form className={classes.form}>
@@ -76,7 +94,7 @@ const Register: React.FC<RegisterProps> = () => {
               disabled={!formIsValid}
               onClick={() => onSubmit(values)}
             >
-              Sign up
+              Sign in
             </Button>
           </form>
         </Paper>
@@ -87,7 +105,7 @@ const Register: React.FC<RegisterProps> = () => {
         size="large"
         className={classes.button}
       >
-        <NavLink to="/Login" className={classes.link}>
+        <NavLink to="/register" className={classes.link}>
           Or sign in
         </NavLink>
       </Button>
@@ -132,4 +150,4 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default Register;
+export default connect()(Login);
