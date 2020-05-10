@@ -6,7 +6,8 @@ const formInitalsValues = {
   firstname: "",
   lastname: "",
   email: "",
-  password: ""
+  password: "",
+  "password confirmation": ""
 };
 
 const validateForm = (form: RegisterForm): Joi.ValidationResult => {
@@ -17,8 +18,10 @@ const validateForm = (form: RegisterForm): Joi.ValidationResult => {
     email: Joi.string()
       .email({ tlds: { allow: false } })
       .required(),
-    password: Joi.string().min(8).max(255).required()
+    password: Joi.string().min(8).max(255).required(),
+    "password confirmation": Joi.string().min(8).max(255)
   });
+
   return schema.validate(form);
 };
 

@@ -9,17 +9,11 @@ import { NavLink, useHistory } from "react-router-dom";
 
 import { TextField, Typography, Paper, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { User } from "../../types/User";
 
 import { authUserWithJWT } from "../../actions/auth.actions";
+import { RootState } from "../../types/RootState";
 
 interface LoginProps {}
-
-interface RootState {
-  authReducer: {
-    user: User;
-  };
-}
 
 const Login: React.FC<LoginProps> = () => {
   const classes = useStyles();

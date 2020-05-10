@@ -1,6 +1,4 @@
-// TODO add confirm password
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import useForm from "../../hooks/useForm";
 import { formInitalsValues, validateForm } from "./config";
@@ -19,17 +17,21 @@ const Register: React.FC<RegisterProps> = () => {
   const dispatch = useDispatch();
 
   const [values, onChange] = useForm(formInitalsValues);
-  const [formIsValid, setFormIsValid] = useState(false);
+  const [error, setError] = useState<string>();
 
-  const onSubmit = (form: RegisterForm) => dispatch(registerUser(form));
+  const onSubmit = (form: RegisterForm) => {
+    const error = validateForm(values).error;
+    if (values.password !== values["password confirmation"]) {
+      return setError("Passwords don't match");
+    }
+    if (error) {
+      return setError(error.message);
+    }
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (!validateForm(values).error) {
-        setFormIsValid(true);
-      }
-    }, 500);
-  }, [values]);
+    delete values["password confirmation"];
+
+    dispatch(registerUser(form));
+  };
 
   return (
     <div className={classes.root}>
@@ -50,7 +52,8 @@ const Register: React.FC<RegisterProps> = () => {
         >
           Sign up now !
         </Typography>
-        <Paper elevation={3} style={{ marginTop: "50px" }}>
+        <Paper elevation={3} className={classes.paper}>
+          <span className={classes.error}>{error}</span>
           <form className={classes.form}>
             {Object.entries(values).map(([key, value]) => (
               <TextField
@@ -60,7 +63,7 @@ const Register: React.FC<RegisterProps> = () => {
                 name={key}
                 value={value}
                 type={
-                  key === "password"
+                  key === "password" || key === "password confirmation"
                     ? "password"
                     : key === "email"
                     ? "email"
@@ -73,7 +76,6 @@ const Register: React.FC<RegisterProps> = () => {
             <Button
               variant="contained"
               color="primary"
-              disabled={!formIsValid}
               onClick={() => onSubmit(values)}
             >
               Sign up
@@ -129,6 +131,15 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     margin: "0 30px"
+  },
+  paper: {
+    marginTop: "50px",
+    display: "flex",
+    flexDirection: "column"
+  },
+  error: {
+    color: "red",
+    margin: "0 auto"
   }
 }));
 

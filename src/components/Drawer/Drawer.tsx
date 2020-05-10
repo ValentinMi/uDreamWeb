@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import Routes from "../../Routes";
+import { useLocation } from "react-router-dom";
+import { useSelector, connect } from "react-redux";
 import clsx from "clsx";
 import {
   makeStyles,
@@ -22,10 +25,12 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
+import MenuItem from "@material-ui/core/MenuItem";
+import Menu from "@material-ui/core/Menu";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 import { Container } from "@material-ui/core";
-import Routes from "../../Routes";
-import { useLocation } from "react-router-dom";
 import capitalize from "../../utils/capitalize";
+import { RootState } from "../../types/RootState";
 
 const drawerWidth = 240;
 
@@ -88,19 +93,33 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export default function AppDrawer() {
+const AppDrawer = () => {
   const classes = useStyles();
   const theme = useTheme();
+  const { user } = useSelector((state: RootState) => state.authReducer);
+
   const [open, setOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   // Custom state
   const location = useLocation();
 
   const handleDrawerOpen = () => {
-    setOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setOpen(true);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
     setOpen(false);
   };
 
@@ -121,62 +140,96 @@ export default function AppDrawer() {
           [classes.appBarShift]: open
         })}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
-          >
-            <MenuIcon />
-          </IconButton>
+        <Toolbar style={{ display: "flex", justifyContent: "space-between" }}>
+          {user && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Typography variant="h6" noWrap>
             {treatPathName(location.pathname)}
           </Typography>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <IconButton
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right"
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right"
+              }}
+              open={open}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+              <MenuItem onClick={handleClose}>My account</MenuItem>
+            </Menu>
+            {user && <Typography>{user.username}</Typography>}
+          </div>
         </Toolbar>
       </AppBar>
-      <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="left"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
-        </div>
-        <Divider />
-        <List>
-          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+      {user && (
+        <Drawer
+          className={classes.drawer}
+          variant="persistent"
+          anchor="left"
+          open={drawerOpen}
+          classes={{
+            paper: classes.drawerPaper
+          }}
+        >
+          <div className={classes.drawerHeader}>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+          </div>
+          <Divider />
+          <List>
+            {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
+              <ListItem button key={text}>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+          <List>
+            {["All mail", "Trash", "Spam"].map((text, index) => (
+              <ListItem button key={text}>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
+        </Drawer>
+      )}
       <main
         className={clsx(classes.content, {
           [classes.contentShift]: open
@@ -189,4 +242,6 @@ export default function AppDrawer() {
       </main>
     </div>
   );
-}
+};
+
+export default connect()(AppDrawer);

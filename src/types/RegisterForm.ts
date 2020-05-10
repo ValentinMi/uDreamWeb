@@ -4,4 +4,5 @@ export type RegisterForm = {
   lastname: string;
   email: string;
   password: string;
+  "password confirmation"?: string;
 };
